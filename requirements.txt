@@ -1,0 +1,15 @@
+# requirements.txt — Dépendances du projet A-Maze-ing
+# Installer avec: pip install -r requirements.txt
+
+# Linting & type checking (obligatoires selon le sujet)
+flake8>=6.0.0
+mypy>=1.0.0
+
+# Tests (recommandé)
+pytest>=7.0.0
+
+# Build du package pip
+build>=1.0.0
+
+# Optionnel: si vous utilisez MiniLibX Python binding
+# mlx  ← à décommenter si vous choisissez l'affichage MLX

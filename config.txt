@@ -1,0 +1,25 @@
+# config.txt — Configuration par défaut du labyrinthe A-Maze-ing
+# Syntaxe: KEY=VALUE (une paire par ligne)
+# Les lignes commençant par # sont des commentaires.
+
+# Dimensions du labyrinthe (en nombre de cellules)
+WIDTH=20
+HEIGHT=15
+
+# Coordonnées de l'entrée (x,y) — doit être sur le bord extérieur
+ENTRY=0,0
+
+# Coordonnées de la sortie (x,y) — doit être sur le bord extérieur
+EXIT=19,14
+
+# Fichier de sortie (format hexadécimal)
+OUTPUT_FILE=maze.txt
+
+# Labyrinthe parfait (True = un seul chemin entre entrée et sortie)
+PERFECT=True
+
+# Graine aléatoire pour la reproductibilité (optionnel, retirer pour aléatoire total)
+SEED=42
+
+# Algorithme de génération (optionnel): dfs | prim (si bonus implémenté)
+ALGORITHM=dfs
