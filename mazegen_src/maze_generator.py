@@ -40,6 +40,7 @@ import random
 from typing import List, Tuple, Optional
 from collections import deque
 
+from mypy.typeops import false_only
 
 # ============================================================
 # CONSTANTES — bits de direction
@@ -199,12 +200,30 @@ class MazeGenerator:
         Pour abattre le mur entre (x, y) et (nx, ny):
           self.cells[y][x]   &= ~bit_courant   (retirer le bit de la direction)
           self.cells[ny][nx] &= ~bit_opposé     (retirer le bit opposé du voisin)
-
-        TODO (Simon): implémenter l'algorithme DFS itératif.
-        ATTENTION: Bien vérifier que nx et ny sont dans les bornes [0, width[ et [0, height[.
         """
-        # TODO (Simon): implémenter le DFS
-        pass
+        self._init_cells()
+
+        visited = [[False for _ in range(self.width)] for _ in range(self.height)]
+        stack: list[tuple[int, int]] = [self.entry]
+        visited[self.entry[0]][self.entry[1]] = True
+        while stack:
+            x, y = stack[-1]
+            neighbors: list[tuple[int, int, int, int]] = [
+                (x + dx, y + dy, bit, opp)
+                for dx, dy, bit, opp in DIRECTIONS
+                if 0 <= x + dx < self.width
+                   and 0 <= y + dy < self.height
+                   and not visited[y + dy][x + dx]
+            ]
+            if neighbors:
+                nx, ny, bit, opp = random.choice(neighbors)
+                self.cells[y][x] &= ~bit
+                self.cells[ny][nx] &= ~opp
+                visited[ny][nx] = True
+                stack.append((nx, ny))
+            else:
+                stack.pop()
+
 
     def _add_loops(self) -> None:
         """
