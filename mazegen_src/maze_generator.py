@@ -215,7 +215,7 @@ class MazeGenerator:
                    and 0 <= y + dy < self.height
                    and not visited[y + dy][x + dx]
             ]
-            if neighbors:
+            if neighbors and self._check_open_area(x, y):
                 nx, ny, bit, opp = random.choice(neighbors)
                 self.cells[y][x] &= ~bit
                 self.cells[ny][nx] &= ~opp
@@ -243,8 +243,7 @@ class MazeGenerator:
         # TODO (Simon): implémenter l'ajout de boucles
         pass
 
-    @staticmethod
-    def _check_open_area(x: int, y: int) -> bool:
+    def _check_open_area(self, x: int, y: int) -> bool:
         """
         Vérifie si abattre un mur à (x,y) créerait une zone ouverte > 2×2.
 
@@ -259,7 +258,22 @@ class MazeGenerator:
         - Astuce: vérifier pour chaque carré 3×3 qui contient (x,y) si les 4 passages
           internes sont ouverts.
         """
-        # TODO (Simon)
+        for ox in range(-2, 1):
+            for oy in range(-2, 1):
+                bx, by = x + ox, y + oy
+                if not (0 <= bx and bx + 2 < self.width
+                        and 0 <= by and by + 2 < self.height):
+                    continue
+                open_area = True
+                for cy in range(by, by + 3):
+                    for cx in range(bx, bx + 3):
+                        if cx < bx + 2 and (self.cells[cy][cx] & EAST):
+                            open_area = False
+                        if cy < by + 2 and (self.cells[cy][cx] & SOUTH):
+                            open_area = False
+
+                if open_area:
+                    return False
         return True
 
     # ----------------------------------------------------------
