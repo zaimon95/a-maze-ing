@@ -40,6 +40,7 @@ import random
 from typing import List, Tuple, Optional
 from collections import deque
 
+from mypy.typeops import false_only
 
 # ============================================================
 # CONSTANTES — bits de direction
@@ -199,12 +200,30 @@ class MazeGenerator:
         Pour abattre le mur entre (x, y) et (nx, ny):
           self.cells[y][x]   &= ~bit_courant   (retirer le bit de la direction)
           self.cells[ny][nx] &= ~bit_opposé     (retirer le bit opposé du voisin)
-
-        TODO (Simon): implémenter l'algorithme DFS itératif.
-        ATTENTION: Bien vérifier que nx et ny sont dans les bornes [0, width[ et [0, height[.
         """
-        # TODO (Simon): implémenter le DFS
-        pass
+        self._init_cells()
+
+        visited = [[False for _ in range(self.width)] for _ in range(self.height)]
+        stack: list[tuple[int, int]] = [self.entry]
+        visited[self.entry[0]][self.entry[1]] = True
+        while stack:
+            x, y = stack[-1]
+            neighbors: list[tuple[int, int, int, int]] = [
+                (x + dx, y + dy, bit, opp)
+                for dx, dy, bit, opp in DIRECTIONS
+                if 0 <= x + dx < self.width
+                   and 0 <= y + dy < self.height
+                   and not visited[y + dy][x + dx]
+            ]
+            if neighbors and self._check_open_area(x, y):
+                nx, ny, bit, opp = random.choice(neighbors)
+                self.cells[y][x] &= ~bit
+                self.cells[ny][nx] &= ~opp
+                visited[ny][nx] = True
+                stack.append((nx, ny))
+            else:
+                stack.pop()
+
 
     def _add_loops(self) -> None:
         """
@@ -239,7 +258,22 @@ class MazeGenerator:
         - Astuce: vérifier pour chaque carré 3×3 qui contient (x,y) si les 4 passages
           internes sont ouverts.
         """
-        # TODO (Simon)
+        for ox in range(-2, 1):
+            for oy in range(-2, 1):
+                bx, by = x + ox, y + oy
+                if not (0 <= bx and bx + 2 < self.width
+                        and 0 <= by and by + 2 < self.height):
+                    continue
+                open_area = True
+                for cy in range(by, by + 3):
+                    for cx in range(bx, bx + 3):
+                        if cx < bx + 2 and (self.cells[cy][cx] & EAST):
+                            open_area = False
+                        if cy < by + 2 and (self.cells[cy][cx] & SOUTH):
+                            open_area = False
+
+                if open_area:
+                    return False
         return True
 
     # ----------------------------------------------------------
@@ -301,10 +335,17 @@ class MazeGenerator:
         - Si y == 0         → ouvrir le mur Nord   (retirer bit NORTH)
         - Si y == height-1  → ouvrir le mur Sud    (retirer bit SOUTH)
 
-        TODO (Simon): implémenter pour entry et exit_pos.
         """
-        # TODO (Simon)
-        pass
+        for x, y in (self.entry, self.exit_pos):
+            if x == 0:
+                self.cells[y][x] &= ~WEST
+            elif x == self.width - 1:
+                self.cells[y][x] &= ~EAST
+            elif y == 0:
+                self.cells[y][x] &= ~NORTH
+            elif y == self.height - 1:
+                self.cells[y][x] &= ~SOUTH
+
 
     def _enforce_borders(self) -> None:
         """
@@ -314,13 +355,21 @@ class MazeGenerator:
         Parcourir les 4 bords et fermer les murs extérieurs:
         - Ligne y=0         → bit NORTH doit être 1 pour toutes les cellules sauf entry/exit
         - Ligne y=height-1  → bit SOUTH doit être 1
-        - Col  x=0          → bit WEST doit être 1
-        - Col  x=width-1    → bit EAST doit être 1
+        - Col x=0          → bit WEST doit être 1
+        - Col x=width-1    → bit EAST doit être 1
 
-        TODO (Simon): implémenter le parcours des bords.
         """
-        # TODO (Simon)
-        pass
+        exceptions: set[tuple[int, int]] = {self.entry, self.exit_pos}
+        for y in range(self.width):
+            if (0, y) not in exceptions:
+                self.cells[y][0] |= WEST
+            elif (self.width - 1, y) not in exceptions:
+                self.cells[y][self.width - 1] |= EAST
+        for x in range(self.height):
+            if (x, 0) not in exceptions:
+                self.cells[0][x] |= NORTH
+            elif (x, self.height - 1) not in exceptions:
+                self.cells[self.height - 1][x] |= SOUTH
 
     # ----------------------------------------------------------
     # RÉSOLUTION — BFS
