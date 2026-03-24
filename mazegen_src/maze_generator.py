@@ -243,7 +243,8 @@ class MazeGenerator:
         # TODO (Simon): implémenter l'ajout de boucles
         pass
 
-    def _check_open_area(self, x: int, y: int) -> bool:
+    @staticmethod
+    def _check_open_area(x: int, y: int) -> bool:
         """
         Vérifie si abattre un mur à (x,y) créerait une zone ouverte > 2×2.
 
@@ -320,10 +321,17 @@ class MazeGenerator:
         - Si y == 0         → ouvrir le mur Nord   (retirer bit NORTH)
         - Si y == height-1  → ouvrir le mur Sud    (retirer bit SOUTH)
 
-        TODO (Simon): implémenter pour entry et exit_pos.
         """
-        # TODO (Simon)
-        pass
+        for x, y in (self.entry, self.exit_pos):
+            if x == 0:
+                self.cells[y][x] &= ~WEST
+            elif x == self.width - 1:
+                self.cells[y][x] &= ~EAST
+            elif y == 0:
+                self.cells[y][x] &= ~NORTH
+            elif y == self.height - 1:
+                self.cells[y][x] &= ~SOUTH
+
 
     def _enforce_borders(self) -> None:
         """
@@ -333,13 +341,21 @@ class MazeGenerator:
         Parcourir les 4 bords et fermer les murs extérieurs:
         - Ligne y=0         → bit NORTH doit être 1 pour toutes les cellules sauf entry/exit
         - Ligne y=height-1  → bit SOUTH doit être 1
-        - Col  x=0          → bit WEST doit être 1
-        - Col  x=width-1    → bit EAST doit être 1
+        - Col x=0          → bit WEST doit être 1
+        - Col x=width-1    → bit EAST doit être 1
 
-        TODO (Simon): implémenter le parcours des bords.
         """
-        # TODO (Simon)
-        pass
+        exceptions: set[tuple[int, int]] = {self.entry, self.exit_pos}
+        for y in range(self.width):
+            if (0, y) not in exceptions:
+                self.cells[y][0] |= WEST
+            elif (self.width - 1, y) not in exceptions:
+                self.cells[y][self.width - 1] |= EAST
+        for x in range(self.height):
+            if (x, 0) not in exceptions:
+                self.cells[0][x] |= NORTH
+            elif (x, self.height - 1) not in exceptions:
+                self.cells[self.height - 1][x] |= SOUTH
 
     # ----------------------------------------------------------
     # RÉSOLUTION — BFS
