@@ -11,15 +11,24 @@ TÂCHE: Relier tous les modules ensemble, gérer le flux principal.
 # ============================================================
 import sys
 from typing import Optional
-
-# TODO (Otto): importer les modules une fois créés:
-# from config_parser import parse_config, MazeConfig
+from src.config_parser import parse_config
 # from mazegen_src.maze_generator import MazeGenerator
 # from output_writer import write_output_file
 # from display import display_maze_terminal
 
 
 def main(config_path: str) -> None:
+    try:
+        config = parse_config(config_path)
+
+        print("Config Parsed Successfully:")
+        print(f"    Dimensions: {config.width}x{config.height}")
+        print(f"    Entry: {config.entry}| Exit: {config.exit_pos}")
+        print(f"    Perfect: {config.perfect} | Seed: {config.seed}")
+    
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
     """
     Point d'entrée principal du programme.
 
