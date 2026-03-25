@@ -346,7 +346,6 @@ class MazeGenerator:
             elif y == self.height - 1:
                 self.cells[y][x] &= ~SOUTH
 
-
     def _enforce_borders(self) -> None:
         """
         S'assure que toutes les cellules de bord ont leurs murs extérieurs fermés,
@@ -359,17 +358,17 @@ class MazeGenerator:
         - Col x=width-1    → bit EAST doit être 1
 
         """
-        exceptions: set[tuple[int, int]] = {self.entry, self.exit_pos}
-        for y in range(self.width):
-            if (0, y) not in exceptions:
-                self.cells[y][0] |= WEST
-            elif (self.width - 1, y) not in exceptions:
-                self.cells[y][self.width - 1] |= EAST
-        for x in range(self.height):
-            if (x, 0) not in exceptions:
-                self.cells[0][x] |= NORTH
-            elif (x, self.height - 1) not in exceptions:
-                self.cells[self.height - 1][x] |= SOUTH
+      #  exceptions: set[tuple[int, int]] = {self.entry, self.exit_pos}
+       # for y in range(self.width):
+          #  if (0, y) not in exceptions:
+           #     self.cells[y][0] |= WEST
+         #   elif (self.width - 1, y) not in exceptions:
+          #      self.cells[y][self.width - 1] |= EAST
+       # for x in range(self.height):
+          #  if (x, 0) not in exceptions:
+          #      self.cells[0][x] |= NORTH
+          #  elif (x, self.height - 1) not in exceptions:
+            #    self.cells[self.height - 1][x] |= SOUTH
 
     # ----------------------------------------------------------
     # RÉSOLUTION — BFS

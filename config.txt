@@ -1,5 +1,4 @@
 # config.txt — Configuration par défaut du labyrinthe A-Maze-ing
-# Syntaxe: KEY=VALUE (une paire par ligne)
 # Les lignes commençant par # sont des commentaires.
 
 # Dimensions du labyrinthe (en nombre de cellules)
@@ -7,7 +6,7 @@ WIDTH=20
 HEIGHT=15
 
 # Coordonnées de l'entrée (x,y) — doit être sur le bord extérieur
-ENTRY=0,0
+ENTRY=0,1
 
 # Coordonnées de la sortie (x,y) — doit être sur le bord extérieur
 EXIT=19,14

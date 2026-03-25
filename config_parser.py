@@ -47,7 +47,8 @@ def parse_config(path: str) -> MazeConfig:
             if "=" not in line:
                 raise ValueError(f"Invalid config line: '{line}': Missing '='")
             key, value = line.split("=", 1)
-            raw[key.strip().upper()] = value.strip()
+            raw[key.strip()] = value.strip()
+    print(raw)
 
     mandatory = ["WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"]
     for m in mandatory:

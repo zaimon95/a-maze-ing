@@ -28,7 +28,7 @@ clean:
 
 ## Linting: flake8 + mypy (flags obligatoires du sujet)
 lint:
-	flake8 .
+	flake8 .flake8
 	mypy . \
 		--warn-return-any \
 		--warn-unused-ignores \

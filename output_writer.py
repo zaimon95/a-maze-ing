@@ -25,42 +25,28 @@ if TYPE_CHECKING:
 
 
 def write_output_file(generator: "MazeGenerator", output_path: str) -> None:
-    """
-    Écrit le labyrinthe dans le fichier de sortie.
 
-    Args:
-        generator:   Instance de MazeGenerator après generate().
-        output_path: Chemin du fichier de sortie (ex: "maze.txt").
+    try:
+        f1 = open(output_path, "r")
+        f2 = open('output_maze.txt', 'w')
+        for line in f1:
+            f2.write(line)
+        f1.close()
+        f2.close()
+        ex, ey = generator.entry
+        sx, sy = generator.exit_pos
+        hex_grid = generator.to_hex_grid()
+        solution = generator.get_solution()
+        with open('output_maze.txt', "w") as f:
+            for row in hex_grid:
+                if solution != "":
+                    raise OSError("Solution file isn't empty")
+                    continue
+                f.write("".join(row))
+                f.write("\n")
+            f.write(f"\n{ex},{ey}\n")
+            f.write(f"{sx},{sy}\n")
+            f.write(solution)
 
-    Raises:
-        OSError: Si l'écriture échoue (disque plein, droits insuffisants...).
-
-    TODO (Otto):
-    1. Ouvrir output_path en écriture avec context manager.
-    2. Pour chaque ligne y de 0 à height-1:
-       - Récupérer generator.to_hex_grid()[y]
-       - Écrire la ligne: "".join(row) + "\\n"
-    3. Écrire une ligne vide ("\\n").
-    4. Écrire l'entrée: f"{ex},{ey}\\n" (generator.entry)
-    5. Écrire la sortie: f"{sx},{sy}\\n" (generator.exit_pos)
-    6. Écrire la solution: generator.solution + "\\n"
-
-    ATTENTION: Vérifier que generator.solution n'est pas vide.
-    Si vide → afficher un warning mais continuer (le sujet demande quand même la ligne).
-    """
-    # TODO (Otto): implémenter write_output_file
-    # Exemple de squelette:
-    # ex, ey = generator.entry
-    # sx, sy = generator.exit_pos
-    # hex_grid = generator.to_hex_grid()
-    # try:
-    #     with open(output_path, "w") as f:
-    #         for row in hex_grid:
-    #             f.write("".join(row) + "\n")
-    #         f.write("\n")
-    #         f.write(f"{ex},{ey}\n")
-    #         f.write(f"{sx},{sy}\n")
-    #         f.write(generator.solution + "\n")
-    # except OSError as e:
-    #     raise OSError(f"Failed to write output file '{output_path}': {e}") from e
-    raise NotImplementedError("write_output_file() non implémenté")
+    except OSError as e:
+        print(f"OSError: {e}")
