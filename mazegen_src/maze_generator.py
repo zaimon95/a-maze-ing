@@ -245,18 +245,10 @@ class MazeGenerator:
 
     def _check_open_area(self, x: int, y: int) -> bool:
         """
-        Vérifie si abattre un mur à (x,y) créerait une zone ouverte > 2×2.
+        Vérifie si abattre un mur à (x, y) créerait une zone ouverte > 2×2.
 
         Returns:
             True si c'est safe (pas de 3×3 ouvert), False sinon.
-
-        TODO (Simon):
-        - Après un abattage hypothétique, vérifier les 9 cellules autour de (x,y).
-        - Une zone 3×3 est "ouverte" si toutes les cellules internes peuvent se rejoindre
-          sans mur (ce calcul peut être simplifié: vérifier si un carré 3×3 n'a aucun mur
-          séparant ses cellules).
-        - Astuce: vérifier pour chaque carré 3×3 qui contient (x,y) si les 4 passages
-          internes sont ouverts.
         """
         for ox in range(-2, 1):
             for oy in range(-2, 1):
@@ -389,13 +381,26 @@ class MazeGenerator:
            - Vérifier que le voisin est dans la grille et non visité.
            - Enqueue le voisin avec le chemin mis à jour.
         4. Quand exit_pos est atteint → stocker le chemin dans self.solution.
-
-        TODO (Simon): implémenter le BFS.
-        IMPORTANT: Le chemin BFS doit passer uniquement par des passages ouverts
-        (murs = 0). Ne pas traverser les cellules du motif "42".
         """
-        # TODO (Simon): implémenter BFS
-        self.solution = ""  # placeholder
+        letter: dict[int, str] = {NORTH: 'N', EAST: 'E', SOUTH: 'S', WEST: 'W'}
+        visited: list[list[bool]] = [[False] * self.width for _ in range(self.height)]
+
+        queue: deque[tuple[int, int, str]] = deque()
+        queue.append((self.entry[0], self.entry[1], ""))
+        visited[self.entry[1]][self.entry[0]] = True
+        while queue:
+            x, y, path = queue.popleft()
+            if (x, y) == self.exit_pos:
+                self.solution = path
+                return
+            for dx, dy, bit, _ in DIRECTIONS:
+                nx, ny = x + dx, y + dy
+                if not (self.cells[y][x] & bit) \
+                        and 0 <= nx < self.width \
+                        and 0 <= ny < self.height \
+                        and not visited[ny][nx]:
+                    visited[ny][nx] = True
+                    queue.append((nx, ny, path + letter[bit]))
 
     # ----------------------------------------------------------
     # ACCESSEURS PUBLICS (pour le module réutilisable)
