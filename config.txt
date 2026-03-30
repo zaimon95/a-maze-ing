@@ -2,14 +2,14 @@
 # Les lignes commençant par # sont des commentaires.
 
 # Dimensions du labyrinthe (en nombre de cellules)
-WIDTH=20
-HEIGHT=15
+WIDTH=40
+HEIGHT=20
 
 # Coordonnées de l'entrée (x,y) — doit être sur le bord extérieur
-ENTRY=0,1
+ENTRY=0,5
 
 # Coordonnées de la sortie (x,y) — doit être sur le bord extérieur
-EXIT=19,14
+EXIT=39,14
 
 # Fichier de sortie (format hexadécimal)
 OUTPUT_FILE=maze.txt

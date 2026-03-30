@@ -205,7 +205,7 @@ class MazeGenerator:
 
         visited = [[False for _ in range(self.width)] for _ in range(self.height)]
         stack: list[tuple[int, int]] = [self.entry]
-        visited[self.entry[0]][self.entry[1]] = True
+        visited[self.entry[1]][self.entry[0]] = True
         while stack:
             x, y = stack[-1]
             neighbors: list[tuple[int, int, int, int]] = [
