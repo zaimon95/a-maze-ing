@@ -81,16 +81,7 @@ class MazeGenerator:
         perfect: Si True, génère un labyrinthe parfait (DFS pur).
         seed:    Graine aléatoire pour la reproductibilité.
         cells:   Grille [y][x] → entier 4 bits encodant les murs.
-        solution:Chemin solution sous forme de string "NNEESS...".
-
-    Example:
-        >>> gen = MazeGenerator(width=10, height=10, entry=(0,0),
-        ...                      exit_pos=(9,9), perfect=True, seed=42)
-        >>> gen.generate()
-        >>> print(gen.solution)
-        'SSSEEENNN...'
-        >>> print(gen.cells[0][0])  # murs de la cellule (0,0)
-        9
+        solution:Chemin solution sous forme de string "NNEESS..."
     """
 
     def __init__(
@@ -112,12 +103,6 @@ class MazeGenerator:
             exit_pos: Coordonnées (x, y) de la sortie.
             perfect:  Si True, le labyrinthe sera parfait.
             seed:     Graine pour random.seed() (reproductibilité).
-
-        TODO (Simon):
-        - Stocker tous les paramètres comme attributs d'instance.
-        - Initialiser self.cells = liste vide (sera remplie par generate()).
-        - Initialiser self.solution = "" (sera remplie par _solve()).
-        - Appeler random.seed(seed) si seed is not None.
         """
         self.width = width
         self.height = height
@@ -152,7 +137,6 @@ class MazeGenerator:
         Si not perfect → appeler aussi _add_loops() après _carve_passages()
         pour créer des chemins supplémentaires (cycles).
 
-        TODO (Simon): implémenter cette méthode en appelant les sous-méthodes.
         """
         self._init_cells()
         self._carve_passages()
@@ -173,10 +157,8 @@ class MazeGenerator:
 
         Résultat: self.cells[y][x] = 0xF pour tout (x, y).
 
-        TODO (Simon): créer une liste 2D height×width remplie de 0xF.
         Exemple: [[0xF] * width for _ in range(height)]
         """
-        # TODO (Simon)
         self.cells = [[0xF] * self.width for _ in range(self.height)]
 
     # ----------------------------------------------------------
@@ -203,9 +185,17 @@ class MazeGenerator:
         """
         self._init_cells()
 
-        visited = [[False for _ in range(self.width)] for _ in range(self.height)]
+        visited: list[list[bool]] = [[False] * self.width for _ in range(self.height)]
+
+        # Pré-calculer les cellules du motif 42 et les marquer visitées
+        # → le DFS ne les touchera jamais
+        for x, y in self._get_42_cells():
+            if 0 <= x < self.width and 0 <= y < self.height:
+                visited[y][x] = True  # bloquer ces cellules
+
         stack: list[tuple[int, int]] = [self.entry]
         visited[self.entry[1]][self.entry[0]] = True
+
         while stack:
             x, y = stack[-1]
             neighbors: list[tuple[int, int, int, int]] = [
@@ -272,6 +262,30 @@ class MazeGenerator:
     # MOTIF "42"
     # ----------------------------------------------------------
 
+    def _get_42_cells(self) -> set[tuple[int, int]]:
+        pat_four: list[tuple[int, int]] = [
+            (0, 0), (0, 1), (0, 2),
+            (1, 2), (2, 2),
+            (2, 3), (2, 4),
+        ]
+        pat_two: list[tuple[int, int]] = [
+            (4, 0), (5, 0), (6, 0),
+            (6, 1),
+            (6, 2), (5, 2), (4, 2),
+            (4, 3),
+            (4, 4), (5, 4), (6, 4),
+        ]
+        origin_x: int = (self.width - 7) // 2
+        origin_y: int = (self.height - 5) // 2
+
+        cells: set[tuple[int, int]] = set()
+        for dx, dy in pat_four + pat_two:
+            cells.add((origin_x + dx, origin_y + dy))
+
+        cells.discard(self.entry)
+        cells.discard(self.exit_pos)
+        return cells
+
     def _apply_42_pattern(self) -> None:
         """
         Grave le motif "42" dans le labyrinthe sous forme de cellules entièrement fermées.
@@ -284,37 +298,20 @@ class MazeGenerator:
         - Elles peuvent briser la connectivité → c'est accepté selon le sujet.
         - Si le labyrinthe est trop petit (< ~15×10), afficher un message d'erreur
           et ne pas appliquer le motif.
-
-        TODO (Simon):
-        - Définir les coordonnées relatives des cellules formant "4" et "2"
-          (typiquement ~5 colonnes × 7 lignes chacun, séparés d'un espace).
-        - Centrer le motif dans le labyrinthe.
-        - Pour chaque cellule du motif: self.cells[y][x] = 0xF
-          ET fermer les murs des voisins qui touchent cette cellule
-          (pour garder la cohérence: si ma cellule est fermée côté Est,
-           mon voisin Est doit l'être aussi côté Ouest).
-
-        Conseil: définir les chiffres comme des bitmaps 5×7.
-        Exemple pour "4":
-          PATTERN_4 = [
-            (0,0),(0,1),(0,2),(0,3),  # colonne gauche
-            (1,2),(2,2),(3,2),(4,2),  # barre horizontale
-            (4,0),(4,1),(4,2),(4,3),(4,4),(4,5),(4,6),  # colonne droite
-          ]
         """
-        # TODO (Simon): définir et appliquer le motif
-        MIN_WIDTH = 15
-        MIN_HEIGHT = 10
-        if self.width < MIN_WIDTH or self.height < MIN_HEIGHT:
+        if self.width < 15 or self.height < 10:
             print("Warning: maze too small to display '42' pattern.")
             return
 
-        # TODO (Simon): définir PATTERN_4 et PATTERN_2 puis les appliquer
-        x:int = (int)(self.height / 2) - 2
-        y:int = (int)(self.width / 2) - 3
-        for dx in range(x, x + 5):
-            for dy in range(y, y + 7):
-                self.cells[dx][dy] = 0xF
+        for x, y in self._get_42_cells():
+            if not (0 <= x < self.width and 0 <= y < self.height):
+                continue
+            self.cells[y][x] = 0xF
+            for dx, dy, bit, opp in DIRECTIONS:
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < self.width and 0 <= ny < self.height:
+                    self.cells[ny][nx] |= opp
+
 
     # ----------------------------------------------------------
     # ENTRÉE / SORTIE ET BORDS
@@ -354,17 +351,20 @@ class MazeGenerator:
         - Col x=width-1    → bit EAST doit être 1
 
         """
-      #  exceptions: set[tuple[int, int]] = {self.entry, self.exit_pos}
-       # for y in range(self.width):
-          #  if (0, y) not in exceptions:
-           #     self.cells[y][0] |= WEST
-         #   elif (self.width - 1, y) not in exceptions:
-          #      self.cells[y][self.width - 1] |= EAST
-       # for x in range(self.height):
-          #  if (x, 0) not in exceptions:
-          #      self.cells[0][x] |= NORTH
-          #  elif (x, self.height - 1) not in exceptions:
-            #    self.cells[self.height - 1][x] |= SOUTH
+
+        exceptions: set[tuple[int, int]] = {self.entry, self.exit_pos}
+
+        for x in range(self.width):
+            if (x, 0) not in exceptions:
+                self.cells[0][x] |= NORTH
+            if (x, self.height - 1) not in exceptions:
+                self.cells[self.height - 1][x] |= SOUTH
+
+        for y in range(self.height):
+            if (0, y) not in exceptions:
+                self.cells[y][0] |= WEST
+            if (self.width - 1, y) not in exceptions:
+                self.cells[y][self.width - 1] |= EAST
 
     # ----------------------------------------------------------
     # RÉSOLUTION — BFS
