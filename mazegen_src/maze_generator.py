@@ -312,6 +312,7 @@ class MazeGenerator:
         # TODO (Simon): définir PATTERN_4 et PATTERN_2 puis les appliquer
         x:int = (self.width/2)-3
         y:int = (self.height/2)-2
+        self.cells[x][y] = 0xF
 
     # ----------------------------------------------------------
     # ENTRÉE / SORTIE ET BORDS
