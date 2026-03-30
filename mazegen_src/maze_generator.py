@@ -310,9 +310,11 @@ class MazeGenerator:
             return
 
         # TODO (Simon): définir PATTERN_4 et PATTERN_2 puis les appliquer
-        x:int = (self.width/2)-3
-        y:int = (self.height/2)-2
-        self.cells[x][y] = 0xF
+        x:int = (int)(self.height/2)-2
+        y:int = (int)(self.width/2)-3
+        for dx in range(x, x+4):
+            for dy in range(y, y+6):
+                self.cells[dx][dy] = 0xF
 
     # ----------------------------------------------------------
     # ENTRÉE / SORTIE ET BORDS
