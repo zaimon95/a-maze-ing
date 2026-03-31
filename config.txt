@@ -18,7 +18,7 @@ OUTPUT_FILE=maze.txt
 PERFECT=False
 
 # Graine aléatoire pour la reproductibilité (optionnel, retirer pour aléatoire total)
-SEED=42
+SEED=
 
 # Algorithme de génération (optionnel): dfs | prim (si bonus implémenté)
 ALGORITHM=dfs

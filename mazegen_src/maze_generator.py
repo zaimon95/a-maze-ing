@@ -114,9 +114,6 @@ class MazeGenerator:
         self.cells: List[List[int]] = []
         self.solution: str = ""
 
-        if seed is not None:
-            random.seed(seed)
-
     # ----------------------------------------------------------
     # MÉTHODE PRINCIPALE
     # ----------------------------------------------------------
@@ -137,6 +134,8 @@ class MazeGenerator:
         pour créer des chemins supplémentaires (cycles).
 
         """
+        if self.seed is not None:
+            random.seed(self.seed)
         self._init_cells()
         self._carve_passages()
         if not self.perfect:
