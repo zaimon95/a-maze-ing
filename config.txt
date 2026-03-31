@@ -15,7 +15,7 @@ EXIT=39,14
 OUTPUT_FILE=maze.txt
 
 # Labyrinthe parfait (True = un seul chemin entre entrée et sortie)
-PERFECT=True
+PERFECT=False
 
 # Graine aléatoire pour la reproductibilité (optionnel, retirer pour aléatoire total)
 SEED=42

@@ -40,7 +40,6 @@ import random
 from typing import List, Tuple, Optional
 from collections import deque
 
-from mypy.typeops import false_only
 
 # ============================================================
 # CONSTANTES — bits de direction
@@ -202,8 +201,8 @@ class MazeGenerator:
                 (x + dx, y + dy, bit, opp)
                 for dx, dy, bit, opp in DIRECTIONS
                 if 0 <= x + dx < self.width
-                   and 0 <= y + dy < self.height
-                   and not visited[y + dy][x + dx]
+                and 0 <= y + dy < self.height
+                and not visited[y + dy][x + dx]
             ]
             if neighbors and self._check_open_area(x, y):
                 nx, ny, bit, opp = random.choice(neighbors)
@@ -214,7 +213,6 @@ class MazeGenerator:
             else:
                 stack.pop()
 
-
     def _add_loops(self) -> None:
         """
         Ajoute des boucles au labyrinthe pour le rendre imparfait.
@@ -222,16 +220,33 @@ class MazeGenerator:
         Après un DFS pur, tous les passages sont déjà ouverts de façon optimale.
         Pour créer un labyrinthe imparfait, il faut abattre quelques murs supplémentaires
         aléatoirement (environ 10-20% des murs restants).
-
-        TODO (Simon):
-        - Parcourir les cellules internes.
-        - Pour chaque cellule, pour chaque mur encore fermé vers un voisin valide,
-          l'abattre avec une probabilité de ~15%.
-        - Ne pas abattre de murs sur les bords extérieurs.
-        - Respecter la contrainte: pas de zone ouverte 3×3 (vérifier _check_open_area).
         """
-        # TODO (Simon): implémenter l'ajout de boucles
-        pass
+        cells_42: set[tuple[int, int]] = self._get_42_cells()
+
+        for y in range(self.height):
+            for x in range(self.width):
+                if (x, y) in cells_42:
+                    continue
+
+                for dx, dy, bit, opp in DIRECTIONS:
+                    nx, ny = x + dx, y + dy
+
+                    # Ignorer les bords extérieurs
+                    if not (0 <= nx < self.width and 0 <= ny < self.height):
+                        continue
+
+                    # Ignorer si le mur est déjà ouvert
+                    if not (self.cells[y][x] & bit):
+                        continue
+
+                    # Ignorer les cellules du motif 42
+                    if (nx, ny) in cells_42:
+                        continue
+
+                    # ~15% de chance d'abattre ce mur
+                    if random.random() < 0.1 and self._check_open_area(x, y):
+                        self.cells[y][x] &= ~bit
+                        self.cells[ny][nx] &= ~opp
 
     def _check_open_area(self, x: int, y: int) -> bool:
         """
@@ -311,7 +326,6 @@ class MazeGenerator:
                 nx, ny = x + dx, y + dy
                 if 0 <= nx < self.width and 0 <= ny < self.height:
                     self.cells[ny][nx] |= opp
-
 
     # ----------------------------------------------------------
     # ENTRÉE / SORTIE ET BORDS
