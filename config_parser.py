@@ -68,7 +68,7 @@ def _build_config(raw: dict) -> MazeConfig:
     output_file = str(raw["OUTPUT_FILE"])
     perfect = raw["PERFECT"].lower() == "true"
     seed = raw.get("SEED", None)
-    algoritm = raw.get("ALGORITHM", "dfs")
+    algorithm = raw.get("ALGORITHM", "dfs")
     if seed is None or seed == "":
         return MazeConfig(
             width=width,
@@ -77,7 +77,7 @@ def _build_config(raw: dict) -> MazeConfig:
             exit_pos=exit_pos,
             output_file=output_file,
             perfect=perfect,
-            algorithm=algoritm
+            algorithm=algorithm
         )
 
     elif seed is not None:
@@ -90,7 +90,7 @@ def _build_config(raw: dict) -> MazeConfig:
         output_file=output_file,
         perfect=perfect,
         seed=seed,
-        algorithm=algoritm
+        algorithm=algorithm
     )
 
 
