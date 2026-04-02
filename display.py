@@ -159,7 +159,7 @@ def render_maze(
                 grid[2 * cy + 1][2 * cx + 2] = BLOCK
     ex, ey = generator.entry
     sx, sy = generator.exit_pos
-    grid[2 * ey + 1][2 * ex + 1] = "\033[44m░"
+    grid[2 * ey + 1][2 * ex + 1] = "\033[34mE"
     grid[2 * sy + 1][2 * sx + 1] = "\033[37m▒"
     if show_path:
         path_cells = _path_cells(generator)
@@ -177,7 +177,7 @@ def render_maze(
                 line_str += f"{c_wall}{char}{RESET}"
             elif char == "█":
                 line_str += f"{c_path}{char}{RESET}"
-            elif char == "░":
+            elif char == "E":
                 line_str += f"{c_entry}{char}{RESET}"
             elif char == "▒":
                 line_str += f"{c_exit}{char}{RESET}"

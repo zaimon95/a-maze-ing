@@ -38,7 +38,7 @@ def parse_config(path: str) -> MazeConfig:
     raw: dict[str, str] = {}
 
     if not os.path.exists(path):
-        raise FileNotFoundError(f"Congiguration file not found: {path}")
+        raise FileNotFoundError(f"Configuration file not found: {path}")
     with open(path, "r") as f:
         for line in f:
             line = line.strip()
@@ -95,24 +95,27 @@ def _build_config(raw: dict) -> MazeConfig:
 
 
 def _validate_config(config: MazeConfig) -> None:
-    ex, ey = config.entry
-    xx, xy = config.exit_pos
-    if config.width < 2 or config.height < 2:
-        raise ValueError(f"{config} doesn't meet minimum requirements - expected x and y >= 2")
-    if config.entry == config.exit_pos:
-        raise ValueError(f"{config} cannot be in the same position")
-    if ex < 0 or ex > config.width - 1:
-        raise ValueError("ENTRY WIDTH is out of bounds")
-    if ey < 0 or ey > config.height - 1:
-        raise ValueError("ENTRY HIGHT is out of bounds")
-    if xx < 0 or xx > config.width - 1:
-        raise ValueError("EXIT WIDTH is out of bounds")
-    if xy < 0 or xy > config.height - 1:
-        raise ValueError("EXIT HIGHT is out of bounds")
-    if ex != 0 and ex != config.width - 1 and ey != 0 and ey != config.height - 1:
-        raise ValueError("ENTRY position is not on borders")
-    if xx != 0 and xx != config.width - 1 and xy != 0 and xy != config.height - 1:
-        raise ValueError("EXIT position is not on borders")
+    try:
+        ex, ey = config.entry
+        xx, xy = config.exit_pos
+        if config.width < 2 or config.height < 2:
+            raise ValueError(f"{config} doesn't meet minimum requirements - expected x and y >= 2")
+        if config.entry == config.exit_pos:
+            raise ValueError(f"{config} cannot be in the same position")
+        if ex < 0 or ex > config.width - 1:
+            raise ValueError("ENTRY WIDTH is out of bounds")
+        if ey < 0 or ey > config.height - 1:
+            raise ValueError("ENTRY HIGHT is out of bounds")
+        if xx < 0 or xx > config.width - 1:
+            raise ValueError("EXIT WIDTH is out of bounds")
+        if xy < 0 or xy > config.height - 1:
+            raise ValueError("EXIT HIGHT is out of bounds")
+        if ex != 0 and ex != config.width - 1 and ey != 0 and ey != config.height - 1:
+            raise ValueError("ENTRY position is not on borders")
+        if xx != 0 and xx != config.width - 1 and xy != 0 and xy != config.height - 1:
+            raise ValueError("EXIT position is not on borders")
+    except ValueError as e:
+        print(e)
 
 
 def _parse_coords(value: str, label: str) -> Tuple[int, int]:

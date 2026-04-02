@@ -7,7 +7,7 @@ RESPONSABLE: Les deux (chacun teste son module)
 
 import pytest
 from mazegen_src.maze_generator import MazeGenerator, NORTH, EAST, SOUTH, WEST
-from config_parser import parse_config, MazeConfig
+from config_parser import parse_config
 
 # ============================================================
 # TESTS — MazeGenerator (Simon)
@@ -28,8 +28,8 @@ class TestMazeGeneratorInit:
     def test_cells_empty_before_generate(self) -> None:
         """Les cellules ne sont pas remplies avant generate()."""
         gen = MazeGenerator(5, 5, (0, 0), (4, 4))
-        # TODO (Simon): adapter selon votre implémentation
-        # assert gen.cells == [] ou assert len(gen.cells) == 0
+        assert gen.cells == []
+        assert len(gen.cells) == 0
 
 
 class TestMazeGeneratorGenerate:
@@ -88,7 +88,7 @@ class TestMazeGeneratorGenerate:
 
     def test_solution_exists(self, gen_10x10: MazeGenerator) -> None:
         """Une solution a été calculée."""
-        #assert len(gen_10x10.solution) > 0
+        assert len(gen_10x10.solution) > 0
 
     def test_solution_valid(self, gen_10x10: MazeGenerator) -> None:
         """La solution ne contient que N, E, S, W."""
@@ -156,18 +156,3 @@ class TestConfigParser:
         )
         with pytest.raises(ValueError):
             parse_config(str(config_file))
-
-
-# ============================================================
-# TESTS — output_writer (Otto)
-# ============================================================
-
-class TestOutputWriter:
-    """Tests de l'écriture du fichier de sortie."""
-
-    def test_output_format(self, tmp_path: pytest.TempPathFactory) -> None:
-        """
-        TODO (Otto): générer un petit labyrinthe, écrire le fichier,
-        vérifier le format (nb lignes, caractères hex, ligne vide, coords, solution).
-        """
-        pass  # TODO (Otto)
