@@ -24,13 +24,13 @@ if TYPE_CHECKING:
     from mazegen_src.maze_generator import MazeGenerator
 
 
-def write_output_file(generator: "MazeGenerator", output_path: str) -> None:
+def write_output_file(generator: "MazeGenerator", output_path: str, output: str) -> None:
     """
     Writes the maze grid, entry/exit coordinates and solution path to the output file.
     """
 
     f1 = open(output_path, "r")
-    f2 = open('output_maze.txt', 'w')
+    f2 = open(output, 'w')
     for line in f1:
         f2.write(line)
     f1.close()
@@ -39,7 +39,7 @@ def write_output_file(generator: "MazeGenerator", output_path: str) -> None:
     sx, sy = generator.exit_pos
     hex_grid = generator.to_hex_grid()
     solution = generator.get_solution()
-    with open('output_maze.txt', "w") as f:
+    with open(output, "w") as f:
         for row in hex_grid:
             f.write("".join(row))
             f.write("\n")

@@ -23,12 +23,17 @@ The main function that executes in order the maze
     except Exception:
         return
 
-    write_output_file(generator, config_path)
+    write_output_file(generator, config_path, config.output_file)
     display_maze_terminal(generator)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 a_maze_ing.py <config_file>")
-        sys.exit(1)
-    main(sys.argv[1])
+    try:
+        if len(sys.argv) != 2:
+            print("Usage: python3 a_maze_ing.py <config_file>")
+            sys.exit(1)
+        main(sys.argv[1])
+    except KeyboardInterrupt:
+        sys.exit()
+    except IndexError as e:
+        print(f"[ERROR] {e}")

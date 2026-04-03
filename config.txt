@@ -2,23 +2,20 @@
 # Les lignes commençant par # sont des commentaires.
 
 # Dimensions du labyrinthe (en nombre de cellules)
-WIDTH=40
-HEIGHT=20
+WIDTH=15
+HEIGHT=15
 
 # Coordonnées de l'entrée (x,y) — doit être sur le bord extérieur
-ENTRY=0,5
+ENTRY=0,1
 
 # Coordonnées de la sortie (x,y) — doit être sur le bord extérieur
-EXIT=39,14
+EXIT=1, 0
 
 # Fichier de sortie (format hexadécimal)
 OUTPUT_FILE=maze.txt
 
 # Labyrinthe parfait (True = un seul chemin entre entrée et sortie)
-PERFECT=False
+PERFECT=True
 
 # Graine aléatoire pour la reproductibilité (optionnel, retirer pour aléatoire total)
-SEED=
-
-# Algorithme de génération (optionnel): dfs | prim (si bonus implémenté)
-ALGORITHM=dfs
+SEED=42

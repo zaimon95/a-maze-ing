@@ -8,6 +8,7 @@ TASK: Parse the config.txt file, validate the values, return a MazeConfig object
 # ============================================================
 # IMPORTS
 # ============================================================
+from typing import Any
 from dataclasses import dataclass
 from typing import Optional, Tuple
 import os
@@ -61,13 +62,13 @@ def parse_config(path: str) -> MazeConfig:
                 raise ValueError(f"Missing mandatory configurations key: {m}")
 
         config = _build_config(raw)
-        _validate_config(config)
-        return (config)
     except Exception as e:
         print(f"[ERROR] {e}")
+    _validate_config(config)
+    return (config)
 
 
-def _build_config(raw: dict) -> MazeConfig:
+def _build_config(raw: dict[str, Any]) -> MazeConfig:
     """
     Instantiates and configures all necessary key-value pairs for manipulation.
     """
@@ -76,7 +77,11 @@ def _build_config(raw: dict) -> MazeConfig:
     entry = _parse_coords(raw["ENTRY"], "ENTRY")
     exit_pos = _parse_coords(raw["EXIT"], "EXIT")
     output_file = str(raw["OUTPUT_FILE"])
-    perfect = raw["PERFECT"].lower() == "true"
+    if raw["PERFECT"].lower() == "true" or raw["PERFECT"].lower() == "false":
+        perfect = raw["PERFECT"].lower() == "true"
+    else:
+        print("[ERROR] Perfect can only be True or False")
+        exit()
     seed = raw.get("SEED", None)
     algorithm = raw.get("ALGORITHM", "dfs")
     if seed is None or seed == "":
@@ -123,10 +128,6 @@ def _validate_config(config: MazeConfig) -> None:
             raise ValueError("EXIT WIDTH is out of bounds")
         if xy < 0 or xy > config.height - 1:
             raise ValueError("EXIT HEIGHT is out of bounds")
-        if ex != 0 and ex != config.width - 1 and ey != 0 and ey != config.height - 1:
-            raise ValueError("ENTRY position is not on borders")
-        if xx != 0 and xx != config.width - 1 and xy != 0 and xy != config.height - 1:
-            raise ValueError("EXIT position is not on borders")
     except ValueError as e:
         print(e)
 
@@ -141,6 +142,8 @@ def _parse_coords(value: str, label: str) -> Tuple[int, int]:
     try:
         x = int(parts[0])
         y = int(parts[1])
+        if x < 0 or y < 0:
+            raise Exception("Integers cannot be negative")
         return (x, y)
 
     except ValueError:
