@@ -87,28 +87,17 @@ def display_maze_terminal(generator: "MazeGenerator") -> None:
     Args:
         generator: Instance de MazeGenerator après generate().
 
-    TODO (Simon):
-    - Initialiser show_path = False, palette_idx = 0.
-    - Dans la boucle: appeler render_maze() puis afficher le menu.
-    - Choix 1: appeler generator.generate() et continuer.
-    - Choix 2: toggle show_path.
-    - Choix 3: incrémenter palette_idx % len(COLOR_PALETTES).
-    - Choix 4: quitter la boucle.
-    - Gérer les entrées invalides gracieusement (pas de crash).
     """
     show_path: bool = False
     palette_idx: int = 0
 
     while True:
-        # Effacer l'écran (compatible Unix/Mac)
         os.system("clear")
 
-        # TODO (Simon): appeler render_maze() et afficher le résultat
         lines = render_maze(generator, show_path=show_path,
                             palette_idx=palette_idx)
         print("\n".join(lines))
 
-        # TODO (Simon): afficher le menu
         print("\n==== A-Maze-ing ====")
         print("1. Re-générer un nouveau labyrinthe")
         print("2. Afficher/Cacher le chemin solution")
@@ -116,7 +105,6 @@ def display_maze_terminal(generator: "MazeGenerator") -> None:
         print("4. Quitter")
         choice = input("Choix (1-4): ").strip()
 
-        # TODO (Simon): gérer les choix
         if choice == "1":
             generator.generate()
         elif choice == "2":
@@ -129,15 +117,14 @@ def display_maze_terminal(generator: "MazeGenerator") -> None:
             input("Choix invalide. Appuyer sur Entrée pour continuer...")
 
 
-# ============================================================
-# RENDU ASCII DU LABYRINTHE
-# ============================================================
-
 def render_maze(
     generator: "MazeGenerator",
     show_path: bool = False,
     palette_idx: int = 0,
 ) -> List[str]:
+    """
+    Renders the maze visually and sets its visual value for the output
+    """
     w = generator.width
     h = generator.height
 
@@ -189,6 +176,9 @@ def render_maze(
 
 
 def _path_cells(generator: "MazeGenerator") -> List[Tuple[int, int]]:
+    """
+Made to initiate cardinal coordinate points
+    """
 
     path = []
     x, y = generator.entry

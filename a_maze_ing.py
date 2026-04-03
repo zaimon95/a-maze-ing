@@ -6,16 +6,23 @@ from display import display_maze_terminal
 
 
 def main(config_path: str) -> None:
-    config = parse_config(config_path)
-    generator = MazeGenerator(
-        width=config.width,
-        height=config.height,
-        entry=config.entry,
-        exit_pos=config.exit_pos,
-        perfect=config.perfect,
-        seed=config.seed,
-    )
-    generator.generate()
+    """
+The main function that executes in order the maze
+    """
+    try:
+        config = parse_config(config_path)
+        generator = MazeGenerator(
+            width=config.width,
+            height=config.height,
+            entry=config.entry,
+            exit_pos=config.exit_pos,
+            perfect=config.perfect,
+            seed=config.seed,
+        )
+        generator.generate()
+    except Exception:
+        return
+
     write_output_file(generator, config_path)
     display_maze_terminal(generator)
 

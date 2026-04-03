@@ -25,6 +25,10 @@ if TYPE_CHECKING:
 
 
 def write_output_file(generator: "MazeGenerator", output_path: str) -> None:
+    """
+    This function writes the Ascii output
+    """
+
     f1 = open(output_path, "r")
     f2 = open('output_maze.txt', 'w')
     for line in f1:

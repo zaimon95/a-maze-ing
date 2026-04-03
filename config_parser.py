@@ -35,32 +35,42 @@ class MazeConfig:
 # ============================================================
 
 def parse_config(path: str) -> MazeConfig:
+
+    """
+    Main function for the parsing which opens the config.txt file and calls the
+    necessary tools to return the config
+    """
     raw: dict[str, str] = {}
 
     if not os.path.exists(path):
         raise FileNotFoundError(f"Configuration file not found: {path}")
-    with open(path, "r") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "=" not in line:
-                raise ValueError(f"Invalid config line: '{line}': Missing '='")
-            key, value = line.split("=", 1)
-            raw[key.strip()] = value.strip()
-    print(raw)
+    try:
+        with open(path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" not in line:
+                    raise ValueError(f"Invalid config line: '{line}': Missing '='")
+                key, value = line.split("=", 1)
+                raw[key.strip()] = value.strip()
 
-    mandatory = ["WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"]
-    for m in mandatory:
-        if m not in raw:
-            raise ValueError(f"Missing mandatory configurations key: {m}")
+        mandatory = ["WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"]
+        for m in mandatory:
+            if m not in raw:
+                raise ValueError(f"Missing mandatory configurations key: {m}")
 
-    config = _build_config(raw)
-    _validate_config(config)
-    return (config)
+        config = _build_config(raw)
+        _validate_config(config)
+        return (config)
+    except Exception as e:
+        print(f"[ERROR] {e}")
 
 
 def _build_config(raw: dict) -> MazeConfig:
+    """
+    This function initiates and configures all the neccesary key values to manipulate
+    """
     width = int(raw["WIDTH"])
     height = int(raw["HEIGHT"])
     entry = _parse_coords(raw["ENTRY"], "ENTRY")
@@ -95,6 +105,9 @@ def _build_config(raw: dict) -> MazeConfig:
 
 
 def _validate_config(config: MazeConfig) -> None:
+    """
+    Validates my config whith exceptions
+    """
     try:
         ex, ey = config.entry
         xx, xy = config.exit_pos
@@ -105,11 +118,11 @@ def _validate_config(config: MazeConfig) -> None:
         if ex < 0 or ex > config.width - 1:
             raise ValueError("ENTRY WIDTH is out of bounds")
         if ey < 0 or ey > config.height - 1:
-            raise ValueError("ENTRY HIGHT is out of bounds")
+            raise ValueError("ENTRY HEIGHT is out of bounds")
         if xx < 0 or xx > config.width - 1:
             raise ValueError("EXIT WIDTH is out of bounds")
         if xy < 0 or xy > config.height - 1:
-            raise ValueError("EXIT HIGHT is out of bounds")
+            raise ValueError("EXIT HEIGHT is out of bounds")
         if ex != 0 and ex != config.width - 1 and ey != 0 and ey != config.height - 1:
             raise ValueError("ENTRY position is not on borders")
         if xx != 0 and xx != config.width - 1 and xy != 0 and xy != config.height - 1:
@@ -119,6 +132,9 @@ def _validate_config(config: MazeConfig) -> None:
 
 
 def _parse_coords(value: str, label: str) -> Tuple[int, int]:
+    """
+    Parses the coordinates and checks its value to return valid values
+    """
     parts = value.split(",")
     if len(parts) != 2:
         raise ValueError(f"'{label}' has invalid format '{value}' - expected 'x,y'")
