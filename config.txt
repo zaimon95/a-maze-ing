@@ -6,7 +6,7 @@ WIDTH=15
 HEIGHT=15
 
 # Coordonnées de l'entrée (x,y) — doit être sur le bord extérieur
-ENTRY=0,1
+ENTRY=5,4
 
 # Coordonnées de la sortie (x,y) — doit être sur le bord extérieur
 EXIT=1, 0
