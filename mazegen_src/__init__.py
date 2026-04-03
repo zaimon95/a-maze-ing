@@ -1,5 +1,5 @@
 """
-mazegen — Package réutilisable de génération de labyrinthes.
+mazegen — Reusable maze generation package.
 
 Usage:
     from mazegen_src.maze_generator import MazeGenerator
@@ -8,5 +8,5 @@ Usage:
                         exit_pos=(19, 14), perfect=True, seed=42)
     gen.generate()
     print(gen.solution)      # "SSEEENNN..."
-    print(gen.get_cell(0,0)) # entier 4 bits
+    print(gen.get_cell(0,0)) # 4-bit integer
 """

@@ -1,36 +1,33 @@
 """
-maze_generator.py — Cœur du projet : génération du labyrinthe.
+maze_generator.py — Project core: maze generation.
 
-RESPONSABLE: Simon
-TÂCHE: Implémenter la classe MazeGenerator avec l'algorithme DFS (Recursive Backtracker).
+=== DFS ALGORITHM OVERVIEW (Recursive Backtracker) ===
 
-=== RAPPEL ALGORITHME DFS (Recursive Backtracker) ===
+1. Initialise all cells with ALL walls closed.
+2. Choose a random starting cell → mark it visited.
+3. While unvisited cells remain:
+   a. From the current cell, randomly pick an unvisited neighbour.
+   b. Knock down the wall between the current cell and that neighbour.
+   c. Move to that neighbour (mark it visited).
+   d. If no unvisited neighbour exists → backtrack to the previous cell.
+4. Result: a perfect maze (spanning tree of the grid graph).
 
-1. Initialiser toutes les cellules avec TOUS leurs murs fermés.
-2. Choisir une cellule de départ aléatoire → la marquer visitée.
-3. Tant qu'il existe des cellules non visitées:
-   a. Depuis la cellule courante, choisir un voisin non visité aléatoirement.
-   b. Abattre le mur entre la cellule courante et ce voisin.
-   c. Avancer vers ce voisin (le marquer visité).
-   d. Si aucun voisin non visité → reculer (backtrack) vers la cellule précédente.
-4. Résultat: un labyrinthe parfait (arbre couvrant du graphe de la grille).
+=== WALL ENCODING ===
+Each cell is a 4-bit integer:
+  Bit 0 (LSB) = North  (1 = wall closed, 0 = wall open)
+  Bit 1       = East
+  Bit 2       = South
+  Bit 3       = West
 
-=== ENCODAGE DES MURS ===
-Chaque cellule est un entier 4 bits:
-  Bit 0 (LSB) = Nord  (1 si mur fermé, 0 si ouvert)
-  Bit 1       = Est
-  Bit 2       = Sud
-  Bit 3       = Ouest
-
-Exemple: 0xF = 1111 = toutes les murs fermés
-         0x0 = 0000 = aucun mur (cellule entièrement ouverte)
-         0x3 = 0011 = murs Nord et Est fermés
+Example: 0xF = 1111 = all walls closed
+         0x0 = 0000 = no walls (cell fully open)
+         0x3 = 0011 = North and East walls closed
 
 === DIRECTIONS ===
-Nord: dy=-1, dx=0  → bit 0 de la cellule, bit 2 du voisin (Sud)
-Est:  dy=0,  dx=1  → bit 1 de la cellule, bit 3 du voisin (Ouest)
-Sud:  dy=1,  dx=0  → bit 2 de la cellule, bit 0 du voisin (Nord)
-Ouest:dy=0,  dx=-1 → bit 3 de la cellule, bit 1 du voisin (Est)
+North: dy=-1, dx=0  → bit 0 of current cell, bit 2 of neighbour (South)
+East:  dy=0,  dx=1  → bit 1 of current cell, bit 3 of neighbour (West)
+South: dy=1,  dx=0  → bit 2 of current cell, bit 0 of neighbour (North)
+West:  dy=0,  dx=-1 → bit 3 of current cell, bit 1 of neighbour (East)
 """
 
 # ============================================================
@@ -42,18 +39,18 @@ from collections import deque
 
 
 # ============================================================
-# CONSTANTES — bits de direction
+# CONSTANTS — direction bits
 # ============================================================
 NORTH: int = 0b0001  # bit 0
 EAST:  int = 0b0010  # bit 1
 SOUTH: int = 0b0100  # bit 2
 WEST:  int = 0b1000  # bit 3
 
-# Mapping direction → (dx, dy, bit_opposé)
-# Pour abattre un mur entre deux cellules, il faut
-# retirer le bit de la cellule courante ET le bit opposé du voisin.
+# Direction mapping → (dx, dy, opposite_bit)
+# To knock down a wall between two cells, we must
+# clear the bit on the current cell AND the opposite bit on the neighbour.
 DIRECTIONS: List[Tuple[int, int, int, int]] = [
-    # (dx, dy, bit_courant, bit_voisin_opposé)
+    # (dx, dy, current_bit, opposite_neighbour_bit)
     (0,  -1, NORTH, SOUTH),
     (1,   0, EAST,  WEST),
     (0,   1, SOUTH, NORTH),
@@ -62,25 +59,25 @@ DIRECTIONS: List[Tuple[int, int, int, int]] = [
 
 
 # ============================================================
-# CLASSE PRINCIPALE
+# MAIN CLASS
 # ============================================================
 
 class MazeGenerator:
     """
-    Génère un labyrinthe sur une grille width×height.
+    Generates a maze on a width×height grid.
 
-    Le labyrinthe est stocké comme une liste 2D d'entiers (cells),
-    où chaque entier encode les murs fermés de la cellule via 4 bits.
+    The maze is stored as a 2D list of integers (cells),
+    where each integer encodes the closed walls of a cell via 4 bits.
 
     Attributes:
-        width:   Nombre de colonnes.
-        height:  Nombre de lignes.
-        entry:   Coordonnées (x, y) de l'entrée.
-        exit_pos:Coordonnées (x, y) de la sortie.
-        perfect: Si True, génère un labyrinthe parfait (DFS pur).
-        seed:    Graine aléatoire pour la reproductibilité.
-        cells:   Grille [y][x] → entier 4 bits encodant les murs.
-        solution:Chemin solution sous forme de string "NNEESS..."
+        width:    Number of columns.
+        height:   Number of rows.
+        entry:    Coordinates (x, y) of the entry point.
+        exit_pos: Coordinates (x, y) of the exit point.
+        perfect:  If True, generates a perfect maze (pure DFS).
+        seed:     Random seed for reproducibility.
+        cells:    Grid [y][x] → 4-bit integer encoding the walls.
+        solution: Solution path as a string "NNEESS..."
     """
 
     def __init__(
@@ -93,15 +90,15 @@ class MazeGenerator:
         seed: Optional[int] = None,
     ) -> None:
         """
-        Initialise le générateur sans encore générer le labyrinthe.
+        Initialises the generator without yet generating the maze.
 
         Args:
-            width:    Nombre de colonnes (≥ 2).
-            height:   Nombre de lignes (≥ 2).
-            entry:    Coordonnées (x, y) de l'entrée.
-            exit_pos: Coordonnées (x, y) de la sortie.
-            perfect:  Si True, le labyrinthe sera parfait.
-            seed:     Graine pour random.seed() (reproductibilité).
+            width:    Number of columns (≥ 2).
+            height:   Number of rows (≥ 2).
+            entry:    Coordinates (x, y) of the entry point.
+            exit_pos: Coordinates (x, y) of the exit point.
+            perfect:  If True, the maze will be perfect.
+            seed:     Seed for random.seed() (reproducibility).
         """
         self.width = width
         self.height = height
@@ -109,29 +106,29 @@ class MazeGenerator:
         self.exit_pos = exit_pos
         self.perfect = perfect
         self.seed = seed
-        # Grille des murs : sera initialisée dans generate()
-        # self.cells[y][x] = entier 4 bits
+        # Wall grid: initialised in generate()
+        # self.cells[y][x] = 4-bit integer
         self.cells: List[List[int]] = []
         self.solution: str = ""
 
     # ----------------------------------------------------------
-    # MÉTHODE PRINCIPALE
+    # MAIN METHOD
     # ----------------------------------------------------------
 
     def generate(self) -> None:
         """
-        Génère le labyrinthe complet.
+        Generates the complete maze.
 
-        Étapes:
-        1. _init_cells()       → toutes les cellules avec 4 murs fermés (0xF)
-        2. _carve_passages()   → algorithme DFS pour ouvrir des passages
-        3. _apply_42_pattern() → graver le motif "42" (cellules entièrement fermées)
-        4. _open_entry_exit()  → ouvrir l'entrée et la sortie sur le bord
-        5. _enforce_borders()  → s'assurer que les bords extérieurs sont bien fermés
-        6. _solve()            → calculer le chemin le plus court (BFS)
+        Steps:
+        1. _init_cells()       → all cells with 4 closed walls (0xF)
+        2. _carve_passages()   → DFS algorithm to open passages
+        3. _apply_42_pattern() → carve the "42" pattern (fully closed cells)
+        4. _open_entry_exit()  → open the entry and exit on the border
+        5. _enforce_borders()  → ensure outer borders are properly closed
+        6. _solve()            → compute the shortest path (BFS)
 
-        Si not perfect → appeler aussi _add_loops() après _carve_passages()
-        pour créer des chemins supplémentaires (cycles).
+        If not perfect → also call _add_loops() after _carve_passages()
+        to create additional paths (cycles).
 
         """
         if self.seed is not None:
@@ -151,45 +148,45 @@ class MazeGenerator:
 
     def _init_cells(self) -> None:
         """
-        Crée la grille avec toutes les cellules fermées (tous les murs à 1).
+        Creates the grid with all cells closed (all walls set to 1).
 
-        Résultat: self.cells[y][x] = 0xF pour tout (x, y).
+        Result: self.cells[y][x] = 0xF for all (x, y).
 
-        Exemple: [[0xF] * width for _ in range(height)]
+        Example: [[0xF] * width for _ in range(height)]
         """
         self.cells = [[0xF] * self.width for _ in range(self.height)]
 
     # ----------------------------------------------------------
-    # ALGORITHME DE GÉNÉRATION — DFS Recursive Backtracker
+    # GENERATION ALGORITHM — DFS Recursive Backtracker
     # ----------------------------------------------------------
 
     def _carve_passages(self) -> None:
         """
-        Génère le labyrinthe par DFS itératif (évite la récursion Python trop profonde).
+        Generates the maze using iterative DFS (avoids deep Python recursion).
 
-        Algorithme (version itérative avec stack):
-        1. Initialiser un tableau visited[y][x] = False.
-        2. Choisir une cellule de départ (ex: entrée ou (0,0)).
-        3. Empiler la cellule de départ, la marquer visitée.
-        4. Tant que la stack n'est pas vide:
-           a. Regarder la cellule en sommet de stack.
-           b. Trouver ses voisins non visités dans la grille.
-           c. S'il y en a → choisir un au hasard, abattre le mur, l'empiler.
-           d. Sinon → dépiler (backtrack).
+        Algorithm (iterative version with stack):
+        1. Initialise a visited[y][x] = False array.
+        2. Choose a starting cell (e.g. entry or (0,0)).
+        3. Push the starting cell onto the stack, mark it visited.
+        4. While the stack is not empty:
+           a. Look at the cell on top of the stack.
+           b. Find its unvisited neighbours in the grid.
+           c. If any exist → pick one at random, knock down the wall, push it.
+           d. Otherwise → pop (backtrack).
 
-        Pour abattre le mur entre (x, y) et (nx, ny):
-          self.cells[y][x]   &= ~bit_courant   (retirer le bit de la direction)
-          self.cells[ny][nx] &= ~bit_opposé     (retirer le bit opposé du voisin)
+        To knock down the wall between (x, y) and (nx, ny):
+          self.cells[y][x]   &= ~current_bit   (clear the direction bit)
+          self.cells[ny][nx] &= ~opposite_bit   (clear the opposite bit on the neighbour)
         """
         self._init_cells()
 
         visited: list[list[bool]] = [[False] * self.width for _ in range(self.height)]
 
-        # Pré-calculer les cellules du motif 42 et les marquer visitées
-        # → le DFS ne les touchera jamais
+        # Pre-compute the "42" pattern cells and mark them visited
+        # → DFS will never touch them
         for x, y in self._get_42_cells():
             if 0 <= x < self.width and 0 <= y < self.height:
-                visited[y][x] = True  # bloquer ces cellules
+                visited[y][x] = True  # block these cells
 
         stack: list[tuple[int, int]] = [self.entry]
         visited[self.entry[1]][self.entry[0]] = True
@@ -214,11 +211,11 @@ class MazeGenerator:
 
     def _add_loops(self) -> None:
         """
-        Ajoute des boucles au labyrinthe pour le rendre imparfait.
+        Adds loops to the maze to make it imperfect.
 
-        Après un DFS pur, tous les passages sont déjà ouverts de façon optimale.
-        Pour créer un labyrinthe imparfait, il faut abattre quelques murs supplémentaires
-        aléatoirement (environ 10-20% des murs restants).
+        After a pure DFS, all passages are already opened optimally.
+        To create an imperfect maze, we randomly knock down some additional walls
+        (approximately 10–20% of remaining walls).
         """
         cells_42: set[tuple[int, int]] = self._get_42_cells()
 
@@ -230,29 +227,29 @@ class MazeGenerator:
                 for dx, dy, bit, opp in DIRECTIONS:
                     nx, ny = x + dx, y + dy
 
-                    # Ignorer les bords extérieurs
+                    # Skip outer borders
                     if not (0 <= nx < self.width and 0 <= ny < self.height):
                         continue
 
-                    # Ignorer si le mur est déjà ouvert
+                    # Skip if wall is already open
                     if not (self.cells[y][x] & bit):
                         continue
 
-                    # Ignorer les cellules du motif 42
+                    # Skip cells belonging to the "42" pattern
                     if (nx, ny) in cells_42:
                         continue
 
-                    # ~15% de chance d'abattre ce mur
+                    # ~15% chance to knock down this wall
                     if random.random() < 0.1 and self._check_open_area(x, y):
                         self.cells[y][x] &= ~bit
                         self.cells[ny][nx] &= ~opp
 
     def _check_open_area(self, x: int, y: int) -> bool:
         """
-        Vérifie si abattre un mur à (x, y) créerait une zone ouverte > 2×2.
+        Checks whether knocking down a wall at (x, y) would create an open area > 2×2.
 
         Returns:
-            True si c'est safe (pas de 3×3 ouvert), False sinon.
+            True if safe (no 3×3 open area), False otherwise.
         """
         for ox in range(-2, 1):
             for oy in range(-2, 1):
@@ -273,7 +270,7 @@ class MazeGenerator:
         return True
 
     # ----------------------------------------------------------
-    # MOTIF "42"
+    # "42" PATTERN
     # ----------------------------------------------------------
 
     def _get_42_cells(self) -> set[tuple[int, int]]:
@@ -302,16 +299,16 @@ class MazeGenerator:
 
     def _apply_42_pattern(self) -> None:
         """
-        Grave le motif "42" dans le labyrinthe sous forme de cellules entièrement fermées.
+        Carves the "42" pattern into the maze as fully closed cells.
 
-        Le motif doit être visible dans l'affichage graphique: un groupe de cellules
-        avec tous leurs murs fermés (valeur 0xF) forme les chiffres "4" et "2".
+        The pattern must be visible in the graphical display: a group of cells
+        with all walls closed (value 0xF) forms the digits "4" and "2".
 
-        Contraintes:
-        - Les cellules du motif "42" sont des îlots (toutes les murs = 0xF).
-        - Elles peuvent briser la connectivité → c'est accepté selon le sujet.
-        - Si le labyrinthe est trop petit (< ~15×10), afficher un message d'erreur
-          et ne pas appliquer le motif.
+        Constraints:
+        - The "42" pattern cells are islands (all walls = 0xF).
+        - They may break connectivity → this is accepted per the spec.
+        - If the maze is too small (< ~15×10), print a warning
+          and skip applying the pattern.
         """
         if self.width < 15 or self.height < 10:
             print("Warning: maze too small to display '42' pattern.")
@@ -327,19 +324,19 @@ class MazeGenerator:
                     self.cells[ny][nx] |= opp
 
     # ----------------------------------------------------------
-    # ENTRÉE / SORTIE ET BORDS
+    # ENTRY / EXIT AND BORDERS
     # ----------------------------------------------------------
 
     def _open_entry_exit(self) -> None:
         """
-        Ouvre le mur extérieur à l'entrée et à la sortie du labyrinthe.
+        Opens the outer wall at the entry and exit of the maze.
 
-        L'entrée et la sortie sont des cellules sur le bord.
-        Il faut identifier quel mur extérieur ouvrir:
-        - Si x == 0         → ouvrir le mur Ouest (retirer bit WEST)
-        - Si x == width-1   → ouvrir le mur Est   (retirer bit EAST)
-        - Si y == 0         → ouvrir le mur Nord   (retirer bit NORTH)
-        - Si y == height-1  → ouvrir le mur Sud    (retirer bit SOUTH)
+        The entry and exit are cells on the border.
+        We identify which outer wall to open:
+        - If x == 0         → open the West wall  (clear WEST bit)
+        - If x == width-1   → open the East wall   (clear EAST bit)
+        - If y == 0         → open the North wall  (clear NORTH bit)
+        - If y == height-1  → open the South wall  (clear SOUTH bit)
 
         """
         for x, y in (self.entry, self.exit_pos):
@@ -354,17 +351,16 @@ class MazeGenerator:
 
     def _enforce_borders(self) -> None:
         """
-        S'assure que toutes les cellules de bord ont leurs murs extérieurs fermés,
-        SAUF les cellules d'entrée et de sortie qui ont été ouvertes.
+        Ensures all border cells have their outer walls closed,
+        EXCEPT the entry and exit cells which have been opened.
 
-        Parcourir les 4 bords et fermer les murs extérieurs:
-        - Ligne y=0         → bit NORTH doit être 1 pour toutes les cellules sauf entry/exit
-        - Ligne y=height-1  → bit SOUTH doit être 1
-        - Col x=0          → bit WEST doit être 1
-        - Col x=width-1    → bit EAST doit être 1
+        Iterates over the 4 borders and closes outer walls:
+        - Row y=0         → NORTH bit must be 1 for all cells except entry/exit
+        - Row y=height-1  → SOUTH bit must be 1
+        - Col x=0         → WEST bit must be 1
+        - Col x=width-1   → EAST bit must be 1
 
         """
-
         exceptions: set[tuple[int, int]] = {self.entry, self.exit_pos}
 
         for x in range(self.width):
@@ -380,24 +376,24 @@ class MazeGenerator:
                 self.cells[y][self.width - 1] |= EAST
 
     # ----------------------------------------------------------
-    # RÉSOLUTION — BFS
+    # SOLVER — BFS
     # ----------------------------------------------------------
 
     def _solve(self) -> None:
         """
-        Calcule le chemin le plus court entre entry et exit_pos par BFS.
+        Computes the shortest path between entry and exit_pos using BFS.
 
-        Résultat stocké dans self.solution sous la forme d'une string
-        avec les lettres N, E, S, W (ex: "SSEEENNNEE").
+        Result stored in self.solution as a string
+        of letters N, E, S, W (e.g. "SSEEENNNEE").
 
-        Algorithme BFS:
-        1. File d'attente initialisée avec (entry_x, entry_y, chemin="").
-        2. Ensemble visited pour ne pas repasser par une cellule.
-        3. Pour chaque cellule défilée, essayer les 4 directions:
-           - Vérifier que le mur dans cette direction est OUVERT (bit = 0).
-           - Vérifier que le voisin est dans la grille et non visité.
-           - Enqueue le voisin avec le chemin mis à jour.
-        4. Quand exit_pos est atteint → stocker le chemin dans self.solution.
+        BFS algorithm:
+        1. Queue initialised with (entry_x, entry_y, path="").
+        2. Visited set to avoid revisiting cells.
+        3. For each dequeued cell, try all 4 directions:
+           - Check that the wall in that direction is OPEN (bit = 0).
+           - Check that the neighbour is in the grid and not visited.
+           - Enqueue the neighbour with the updated path.
+        4. When exit_pos is reached → store the path in self.solution.
         """
         letter: dict[int, str] = {NORTH: 'N', EAST: 'E', SOUTH: 'S', WEST: 'W'}
         visited: list[list[bool]] = [[False] * self.width for _ in range(self.height)]
@@ -420,48 +416,48 @@ class MazeGenerator:
                     queue.append((nx, ny, path + letter[bit]))
 
     # ----------------------------------------------------------
-    # ACCESSEURS PUBLICS (pour le module réutilisable)
+    # PUBLIC ACCESSORS (for the reusable module)
     # ----------------------------------------------------------
 
     def get_cell(self, x: int, y: int) -> int:
         """
-        Retourne la valeur de la cellule (x, y).
+        Returns the value of cell (x, y).
 
         Args:
-            x: Colonne (0 à width-1).
-            y: Ligne   (0 à height-1).
+            x: Column (0 to width-1).
+            y: Row    (0 to height-1).
 
         Returns:
-            Entier 4 bits encodant les murs fermés.
+            4-bit integer encoding the closed walls.
         """
         return self.cells[y][x]
 
     def has_wall(self, x: int, y: int, direction: int) -> bool:
         """
-        Indique si la cellule (x, y) a un mur fermé dans la direction donnée.
+        Indicates whether cell (x, y) has a closed wall in the given direction.
 
         Args:
-            x:         Colonne.
-            y:         Ligne.
-            direction: NORTH, EAST, SOUTH ou WEST.
+            x:         Column.
+            y:         Row.
+            direction: NORTH, EAST, SOUTH or WEST.
 
         Returns:
-            True si le mur est fermé, False s'il est ouvert.
+            True if the wall is closed, False if open.
         """
         return bool(self.cells[y][x] & direction)
 
     def get_solution(self) -> str:
-        """Retourne le chemin solution sous forme de string 'NNEESS...'."""
+        """Returns the solution path as a string 'NNEESS...'."""
         return self.solution
 
     def to_hex_grid(self) -> List[List[str]]:
         """
-        Retourne la grille sous forme de liste 2D de caractères hexadécimaux.
+        Returns the grid as a 2D list of hexadecimal characters.
 
         Returns:
-            Liste [y][x] de strings hexadécimaux en majuscule (ex: "F", "A", "3").
+            List [y][x] of uppercase hex strings (e.g. "F", "A", "3").
 
-        Utile pour l'écriture du fichier de sortie.
+        Useful for writing the output file.
         """
         return [
             [format(self.cells[y][x], 'X') for x in range(self.width)]

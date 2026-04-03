@@ -1,44 +1,44 @@
 """
-display.py — Affichage terminal interactif du labyrinthe.
+display.py — Interactive terminal display of the maze.
 
-RESPONSABLE: Otto
-TÂCHE: Afficher le labyrinthe en ASCII couleurs dans le terminal,
-       avec un menu interactif permettant:
-       1. Re-générer un nouveau labyrinthe
-       2. Afficher/cacher le chemin solution
-       3. Changer la couleur des murs
-       4. Quitter
+RESPONSIBLE: Otto
+TASK: Display the maze in colour ASCII in the terminal,
+      with an interactive menu allowing:
+      1. Regenerate a new maze
+      2. Show/hide the solution path
+      3. Change the wall colour
+      4. Quit
 
-=== TECHNIQUE DE RENDU ASCII ===
+=== ASCII RENDERING TECHNIQUE ===
 
-Chaque cellule est représentée sur 2 lignes et 2 colonnes de caractères:
-- La "top-left" d'une cellule (x,y) dans l'espace ASCII est à (2*x, 2*y).
-- On dessine d'abord une grille de '+' aux intersections,
-  puis on ajoute les murs horizontaux ('---') et verticaux ('|').
+Each cell is represented over 2 lines and 2 columns of characters:
+- The "top-left" of cell (x,y) in ASCII space is at (2*x, 2*y).
+- We first draw a grid of '+' at intersections,
+  then add horizontal walls ('---') and vertical walls ('|').
 
-Exemple pour une grille 3×2 (largeur=3, hauteur=2):
+Example for a 3x2 grid (width=3, height=2):
   +--+--+--+
   |        |
   +  +--+  +
   |        |
   +--+--+--+
 
-=== CODES COULEUR ANSI ===
-Pour colorer le terminal, utiliser les codes ANSI:
-  \\033[XXm  où XX est un code couleur.
+=== ANSI COLOUR CODES ===
+To colour the terminal, use ANSI codes:
+  \\033[XXm  where XX is a colour code.
   \\033[0m   = reset
-  \\033[31m  = rouge
-  \\033[32m  = vert
-  \\033[33m  = jaune
-  \\033[34m  = bleu
-  \\033[37m  = blanc
-  \\033[1m   = gras
+  \\033[31m  = red
+  \\033[32m  = green
+  \\033[33m  = yellow
+  \\033[34m  = blue
+  \\033[37m  = white
+  \\033[1m   = bold
 
-Pour les couleurs de fond (background):
-  \\033[41m  = fond rouge
-  \\033[42m  = fond vert
-  \\033[44m  = fond bleu
-  \\033[47m  = fond blanc/gris
+For background colours:
+  \\033[41m  = red background
+  \\033[42m  = green background
+  \\033[44m  = blue background
+  \\033[47m  = white/grey background
 """
 
 # ============================================================
@@ -49,43 +49,43 @@ import os
 if TYPE_CHECKING:
     from mazegen_src.maze_generator import MazeGenerator
 
-# Constantes des bits de direction (dupliquées ici pour éviter l'import circulaire)
+# Direction bit constants (duplicated here to avoid circular imports)
 NORTH: int = 0b0001
 EAST:  int = 0b0010
 SOUTH: int = 0b0100
 WEST:  int = 0b1000
 
 # ============================================================
-# PALETTES DE COULEURS DISPONIBLES
+# AVAILABLE COLOUR PALETTES
 # ============================================================
-# Chaque palette = (couleur_mur, couleur_chemin, couleur_entrée, couleur_sortie)
+# Each palette = (wall_colour, path_colour, entry_colour, exit_colour)
 COLOR_PALETTES = [
-    # (code_mur, code_chemin, code_entrée, code_sortie, nom)
-    ("\033[37m", "\033[36m", "\033[35m", "\033[31m", "Défaut (blanc/cyan)"),
-    ("\033[33m", "\033[36m", "\033[35m", "\033[31m", "Jaune/cyan"),
-    ("\033[32m", "\033[34m", "\033[35m", "\033[31m", "Vert/bleu"),
-    ("\033[34m", "\033[33m", "\033[35m", "\033[31m", "Bleu/jaune"),
+    # (wall_code, path_code, entry_code, exit_code, name)
+    ("\033[37m", "\033[36m", "\033[35m", "\033[31m", "Default (white/cyan)"),
+    ("\033[33m", "\033[36m", "\033[35m", "\033[31m", "Yellow/cyan"),
+    ("\033[32m", "\033[34m", "\033[35m", "\033[31m", "Green/blue"),
+    ("\033[34m", "\033[33m", "\033[35m", "\033[31m", "Blue/yellow"),
 ]
 RESET = "\033[0m"
 
 
 # ============================================================
-# FONCTION PRINCIPALE D'AFFICHAGE INTERACTIF
+# MAIN INTERACTIVE DISPLAY FUNCTION
 # ============================================================
 
 def display_maze_terminal(generator: "MazeGenerator") -> None:
     """
-    Lance l'affichage interactif du labyrinthe dans le terminal.
+    Launches the interactive maze display in the terminal.
 
-    Boucle principale:
-    1. Rendre le labyrinthe en ASCII et l'afficher.
-    2. Afficher le menu: 1. Regen | 2. Chemin | 3. Couleur | 4. Quitter
-    3. Lire le choix de l'utilisateur.
-    4. Effectuer l'action correspondante.
-    5. Répéter.
+    Main loop:
+    1. Render the maze in ASCII and display it.
+    2. Show the menu: 1. Regen | 2. Path | 3. Colour | 4. Quit
+    3. Read the user's choice.
+    4. Perform the corresponding action.
+    5. Repeat.
 
     Args:
-        generator: Instance de MazeGenerator après generate().
+        generator: MazeGenerator instance after generate() has been called.
 
     """
     show_path: bool = False
@@ -99,11 +99,11 @@ def display_maze_terminal(generator: "MazeGenerator") -> None:
         print("\n".join(lines))
 
         print("\n==== A-Maze-ing ====")
-        print("1. Re-générer un nouveau labyrinthe")
-        print("2. Afficher/Cacher le chemin solution")
-        print("3. Changer la couleur des murs")
-        print("4. Quitter")
-        choice = input("Choix (1-4): ").strip()
+        print("1. Regenerate a new maze")
+        print("2. Show/Hide solution path")
+        print("3. Change wall colour")
+        print("4. Quit")
+        choice = input("Choice (1-4): ").strip()
 
         if choice == "1":
             generator.generate()
@@ -114,7 +114,7 @@ def display_maze_terminal(generator: "MazeGenerator") -> None:
         elif choice == "4":
             break
         else:
-            input("Choix invalide. Appuyer sur Entrée pour continuer...")
+            input("Invalid choice. Press Enter to continue...")
 
 
 def render_maze(
@@ -123,7 +123,7 @@ def render_maze(
     palette_idx: int = 0,
 ) -> List[str]:
     """
-    Renders the maze visually and sets its visual value for the output
+    Renders the maze visually and sets its visual value for the output.
     """
     w = generator.width
     h = generator.height
@@ -177,9 +177,8 @@ def render_maze(
 
 def _path_cells(generator: "MazeGenerator") -> List[Tuple[int, int]]:
     """
-Made to initiate cardinal coordinate points
+    Builds the list of (x, y) cells along the solution path.
     """
-
     path = []
     x, y = generator.entry
     path.append((x, y))

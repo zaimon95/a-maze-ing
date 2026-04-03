@@ -1,18 +1,18 @@
 """
-output_writer.py — Écriture du fichier de sortie au format hexadécimal.
+output_writer.py — Writing the output file in hexadecimal format.
 
-RESPONSABLE: Otto
-TÂCHE: Écrire le labyrinthe dans un fichier texte selon le format du sujet.
+RESPONSIBLE: Otto
+TASK: Write the maze to a text file according to the spec format.
 
-=== FORMAT DU FICHIER DE SORTIE ===
+=== OUTPUT FILE FORMAT ===
 
-Ligne 1 à HEIGHT:  une ligne par rangée, chaque cellule encodée en 1 hex (majuscule).
-Ligne HEIGHT+1:    ligne vide
-Ligne HEIGHT+2:    coordonnées de l'entrée "x,y"
-Ligne HEIGHT+3:    coordonnées de la sortie "x,y"
-Ligne HEIGHT+4:    chemin solution "NNEESSSWW..."
+Lines 1 to HEIGHT:  one line per row, each cell encoded as 1 hex digit (uppercase).
+Line HEIGHT+1:      blank line
+Line HEIGHT+2:      entry coordinates "x,y"
+Line HEIGHT+3:      exit coordinates "x,y"
+Line HEIGHT+4:      solution path "NNEESSSWW..."
 
-Toutes les lignes se terminent par \\n.
+All lines end with \\n.
 """
 
 # ============================================================
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 def write_output_file(generator: "MazeGenerator", output_path: str) -> None:
     """
-    This function writes the Ascii output
+    Writes the maze grid, entry/exit coordinates and solution path to the output file.
     """
 
     f1 = open(output_path, "r")

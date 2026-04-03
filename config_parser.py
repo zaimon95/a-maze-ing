@@ -1,8 +1,8 @@
 """
-config_parser.py — Lecture et validation du fichier de configuration.
+config_parser.py — Reading and validating the configuration file.
 
-RESPONSABLE: Otto
-TÂCHE: Parser le fichier config.txt, valider les valeurs, retourner un objet MazeConfig.
+RESPONSIBLE: Otto
+TASK: Parse the config.txt file, validate the values, return a MazeConfig object.
 """
 
 # ============================================================
@@ -13,7 +13,7 @@ from typing import Optional, Tuple
 import os
 
 # ============================================================
-# DATACLASS DE CONFIGURATION
+# CONFIGURATION DATACLASS
 # ============================================================
 
 
@@ -31,14 +31,14 @@ class MazeConfig:
 
 
 # ============================================================
-# FONCTION PRINCIPALE DE PARSING
+# MAIN PARSING FUNCTION
 # ============================================================
 
 def parse_config(path: str) -> MazeConfig:
 
     """
-    Main function for the parsing which opens the config.txt file and calls the
-    necessary tools to return the config
+    Main function for parsing: opens the config.txt file and calls the
+    necessary helpers to return the config object.
     """
     raw: dict[str, str] = {}
 
@@ -69,7 +69,7 @@ def parse_config(path: str) -> MazeConfig:
 
 def _build_config(raw: dict) -> MazeConfig:
     """
-    This function initiates and configures all the neccesary key values to manipulate
+    Instantiates and configures all necessary key-value pairs for manipulation.
     """
     width = int(raw["WIDTH"])
     height = int(raw["HEIGHT"])
@@ -106,7 +106,7 @@ def _build_config(raw: dict) -> MazeConfig:
 
 def _validate_config(config: MazeConfig) -> None:
     """
-    Validates my config whith exceptions
+    Validates the config, raising exceptions on invalid values.
     """
     try:
         ex, ey = config.entry
@@ -133,7 +133,7 @@ def _validate_config(config: MazeConfig) -> None:
 
 def _parse_coords(value: str, label: str) -> Tuple[int, int]:
     """
-    Parses the coordinates and checks its value to return valid values
+    Parses coordinates and validates their values, returning a valid (x, y) tuple.
     """
     parts = value.split(",")
     if len(parts) != 2:
